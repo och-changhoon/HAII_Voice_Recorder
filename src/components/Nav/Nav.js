@@ -4,7 +4,7 @@ import { Outlet } from 'react-router-dom';
 export const Nav = () => {
   return (
     <Fragment>
-      <div>Nav</div>
+      <div>Web Recorder</div>
       <Outlet />
     </Fragment>
   );
