@@ -53,6 +53,12 @@ export const Record = () => {
             setAudioData(e.data);
           };
         }, Number(limit) * 1000);
+
+        const blob = new Blob(audioData, { type: 'audio/ogg codecs=opus' });
+        audioData.splice(0);
+
+        const blobURL = URL.createObjectURL(blob);
+        setBlobUrl(blobURL);
       }
     });
   };
@@ -64,7 +70,7 @@ export const Record = () => {
     const blob = new Blob(audioData, { type: 'audio/ogg codecs=opus' });
     audioData.splice(0);
 
-    const blobURL = window.URL.createObjectURL(blob);
+    const blobURL = URL.createObjectURL(blob);
     setBlobUrl(blobURL);
 
     stream.getAudioTracks().forEach(function (track) {
