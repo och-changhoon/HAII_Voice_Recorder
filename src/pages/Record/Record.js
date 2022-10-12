@@ -11,8 +11,6 @@ export const Record = () => {
 
   const [blobUrl, setBlobUrl] = useState('');
 
-  console.log('셋블롭', blobUrl);
-
   const navigate = useNavigate();
 
   const setLimitTime = e => {
@@ -74,7 +72,6 @@ export const Record = () => {
 
     const blobURL = URL.createObjectURL(blob);
     setBlobUrl(blobURL);
-    console.log('블롭', blobURL);
 
     stream.getAudioTracks().forEach(function (track) {
       track.stop();
