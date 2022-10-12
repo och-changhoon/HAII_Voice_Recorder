@@ -7,11 +7,9 @@ export const Record = () => {
   const [source, setSource] = useState();
   const [analyser, setAnalyser] = useState();
   const [audioData, setAudioData] = useState([]);
-  const [blobUrl, setBlobUrl] = useState('');
-  const [limit, setLimit] = useState();
+  const [limit, setLimit] = useState(0);
 
-  console.log('블롭URL', blobUrl);
-  console.log('제한시간', limit);
+  const [blobUrl, setBlobUrl] = useState('');
 
   const navigate = useNavigate();
 
@@ -20,7 +18,7 @@ export const Record = () => {
   };
 
   const startRec = () => {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const audioCtx = new AudioContext();
 
     const analyser = audioCtx.createAnalyser();
     setAnalyser(analyser);
@@ -41,8 +39,8 @@ export const Record = () => {
       setMedia(mediaRecorder);
       makeSound(stream);
 
-      analyser.onaudioprocess = function (e) {
-        if (e.playbackTime > Number(limit)) {
+      if (Number(limit) > 0) {
+        setTimeout(() => {
           stream.getAudioTracks().forEach(function (track) {
             track.stop();
           });
@@ -54,8 +52,8 @@ export const Record = () => {
           mediaRecorder.ondataavailable = function (e) {
             setAudioData(e.data);
           };
-        }
-      };
+        }, Number(limit) * 1000);
+      }
     });
   };
 
