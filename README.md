@@ -1,8 +1,11 @@
 # 주식회사 하이 기업 과제 - 오디오 재생 프로그램 만들기
 
 ## 프로젝트 소개 
+- 녹음 및 재생이 가능한 오디오 프로그램을 제작합니다. 
+- 진행 기간 : 2022년10월11일 ~ 10월14일 
+- 참여한 개발자 : 류승연, 오창훈, 조민재 
 
-## 프로젝트 실행 방법
+## 프로젝트 배포 링크
 
 ## 사용 기술 스택
 <img src="https://img.shields.io/badge/react-61DAFB?style=for-the-badge&logo=react&logoColor=black"> <img src="https://img.shields.io/badge/javascript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black"> <img src="https://img.shields.io/badge/Tailwind CSS-06B6D4?style=for-the-badge&logo=Tailwind CSS&logoColor=black"> 
