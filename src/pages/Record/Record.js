@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BsMic, BsPlayFill, BsSquareFill } from 'react-icons/bs';
+import { BsMic, BsPlayFill, BsSquareFill, BsDownload } from 'react-icons/bs';
 
 export const Record = () => {
   const [stream, setStream] = useState();
@@ -107,6 +107,15 @@ export const Record = () => {
     }
   };
 
+  const clickDownloadBtn = index => {
+    const url = URL.createObjectURL(audioDataList[index].data);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `음성녹음.mp3`;
+    a.click();
+    a.remove();
+  };
+
   useEffect(() => {
     let intervalId;
 
@@ -140,16 +149,14 @@ export const Record = () => {
     setMinute('00');
   };
 
-  console.log(limit);
-
   return (
-    <div className="flex justify-center items-center">
+    <div className="flex justify-center items-center font-pretendard">
       {/* 981px 언더 반응형 */}
       <div className="flex justify-center items-center flex-col w-1/3 max-w-[400px] min-w-[300px] p-[20px] h-screen bg-slate-100">
         <div className="flex justify-start items-end w-full h-full max-h-[100px] border-b-[3px]">
           <span className="text-3xl font-black pb-[10px]">Recorded List</span>
         </div>
-        <div className="flex justify-start items-start flex-col w-full h-full py-[10px] overflow-scroll">
+        <div className="flex justify-start items-start flex-col w-full h-full py-[10px] overflow-auto">
           {audioDataList &&
             audioDataList.map((data, index) => {
               return (
@@ -168,7 +175,13 @@ export const Record = () => {
                       currTrack === index ? 'pl-[15px]' : 'pl-[20px]'
                     } pr-[20px] w-full`}
                   >
-                    <p>Track {index}</p>
+                    <div className="flex items-center justify-between">
+                      <p>Track {index}</p>
+                      <BsDownload
+                        className="text-sm cursor-pointer"
+                        onClick={() => clickDownloadBtn(index)}
+                      />
+                    </div>
                     <div className="flex justify-between items-center w-full">
                       <p>{data.date}</p>
                       <p>{data.time}</p>
@@ -197,7 +210,7 @@ export const Record = () => {
         </div>
       </div>
 
-      <div className="flex justify-center items-center flex-col w-full h-screen bg-slate-500">
+      <div className="flex justify-center items-center flex-col w-full h-screen bg-slate-500 text-white">
         {currTrack >= 0 ? (
           <button
             className="flex justify-center items-center w-[75px] h-[75px] rounded-full bg-blue-500"
@@ -206,16 +219,29 @@ export const Record = () => {
             <BsPlayFill className="text-3xl" />
           </button>
         ) : isRecording ? (
-          <div>
-            <span className="minute">{minute}</span>
-            <span>:</span>
-            <span className="second">{second}</span>
-          </div>
+          <>
+            <div className="bg-base bg-play bg-center bg-no-repeat bg-cover w-full h-4/5" />
+            <div className="flex items-center h-1/5 text-3xl font-mono">
+              <span className="minute">{minute}</span>
+              <span>:</span>
+              <span className="second">{second}</span>
+            </div>
+          </>
         ) : (
-          <div className="text-base">
-            <input className="border" onChange={setLimitTime} />
-            녹음을 시작하려면 녹음 버튼을 클릭하십시오.
-          </div>
+          <>
+            <div className="bg-base bg-stop bg-center bg-no-repeat bg-cover w-full h-4/5" />
+            <div className="flex flex-col justify-center items-center h-1/5 flex-col leading-loose">
+              녹음을 시작하려면 녹음 버튼을 클릭하십시오.
+              <span>
+                타이머 지정 시{' '}
+                <input
+                  className="border w-12 text-center text-black"
+                  onChange={setLimitTime}
+                />{' '}
+                초 동안 녹음하기
+              </span>
+            </div>
+          </>
         )}
       </div>
     </div>
