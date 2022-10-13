@@ -10,9 +10,17 @@ export const Record = () => {
   const [audioDataList, setAudioDataList] = useState([]);
   const [limit, setLimit] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
-  const [currTrack, setCurrTrack] = useState();
+  const [currTrack, setCurrTrack] = useState(null);
 
-  const [blobUrl, setBlobUrl] = useState('');
+  //const [blobUrl, setBlobUrl] = useState('');
+
+  console.log('스트림', stream);
+  console.log('미디어: 뉴 미디어레코드에 스트림 넣어서 생성', media);
+  console.log('소스: 오디오컨텍스트에 스트림 넣어서 생성', source);
+  console.log('애널라이저: 오디오컨텍스트로 생성', analyser);
+  console.log('오디오데이터: 미디어레코더안에있음', audioData);
+  console.log('오디오데이터리스트', audioDataList);
+  console.log('------------------------------------------------------------');
 
   const setLimitTime = e => {
     setLimit(e.target.value);
@@ -20,6 +28,7 @@ export const Record = () => {
 
   const startRec = () => {
     const audioCtx = new AudioContext();
+    console.log('-----오디오컨텍스트-----', audioCtx);
 
     const analyser = audioCtx.createAnalyser();
     setAnalyser(analyser);
@@ -51,15 +60,32 @@ export const Record = () => {
           audioCtx.createMediaStreamSource(stream).disconnect();
 
           mediaRecorder.ondataavailable = function (e) {
-            setAudioData(e.data);
+            // setAudioData(e.data);
+            setAudioData(() => {
+              const prevAudioData = [...audioData];
+              prevAudioData.push(e.data);
+              setAudioData(prevAudioData);
+            });
+            setAudioDataList(() => {
+              const prevAudioDataList = [...audioDataList];
+              prevAudioDataList.push({
+                data: e.data,
+                date: new Date()
+                  .toISOString()
+                  .replace('T', ' ')
+                  .substring(0, 19),
+                time: '00:02',
+              });
+              setAudioDataList(prevAudioDataList);
+            });
           };
         }, Number(limit) * 1000);
 
-        const blob = new Blob(audioData, { type: 'audio/ogg codecs=opus' });
-        audioData.splice(0);
+        // const blob = new Blob(audioData, { type: 'audio/ogg codecs=opus' });
+        // audioData.splice(0);
 
-        const blobURL = URL.createObjectURL(blob);
-        setBlobUrl(blobURL);
+        // const blobURL = URL.createObjectURL(blob);
+        // setBlobUrl(blobURL);
 
         setIsRecording(false);
       }
@@ -87,11 +113,11 @@ export const Record = () => {
       });
     };
 
-    const blob = new Blob(audioData, { type: 'audio/ogg codecs=opus' });
-    audioData.splice(0);
+    // const blob = new Blob(audioData, { type: 'audio/ogg codecs=opus' });
+    // audioData.splice(0);
 
-    const blobURL = URL.createObjectURL(blob);
-    setBlobUrl(blobURL);
+    // const blobURL = URL.createObjectURL(blob);
+    // setBlobUrl(blobURL);
 
     stream.getAudioTracks().forEach(function (track) {
       track.stop();
@@ -113,9 +139,6 @@ export const Record = () => {
       audio.play();
     }
   };
-
-  console.log(currTrack);
-  console.log('audioDataList: ', audioDataList);
 
   return (
     <div className="flex justify-center items-center">
@@ -182,9 +205,9 @@ export const Record = () => {
             >
               <BsPlayFill className="text-3xl" />
             </button>
-            <audio controls src={blobUrl}>
+            {/* <audio controls src={blobUrl}>
               Play
-            </audio>
+            </audio> */}
           </Fragment>
         ) : (
           <div className="text-base">
