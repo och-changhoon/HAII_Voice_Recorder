@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BsMic, BsPlayFill, BsSquareFill } from 'react-icons/bs';
 
 export const Record = () => {
@@ -6,29 +6,22 @@ export const Record = () => {
   const [media, setMedia] = useState();
   const [source, setSource] = useState();
   const [analyser, setAnalyser] = useState();
-  const [audioData, setAudioData] = useState([]);
   const [audioDataList, setAudioDataList] = useState([]);
-  const [limit, setLimit] = useState(0);
+  const [limit, setLimit] = useState();
   const [isRecording, setIsRecording] = useState(false);
-  const [currTrack, setCurrTrack] = useState(null);
-
-  //const [blobUrl, setBlobUrl] = useState('');
-
-  console.log('스트림', stream);
-  console.log('미디어: 뉴 미디어레코드에 스트림 넣어서 생성', media);
-  console.log('소스: 오디오컨텍스트에 스트림 넣어서 생성', source);
-  console.log('애널라이저: 오디오컨텍스트로 생성', analyser);
-  console.log('오디오데이터: 미디어레코더안에있음', audioData);
-  console.log('오디오데이터리스트', audioDataList);
-  console.log('------------------------------------------------------------');
+  const [currTrack, setCurrTrack] = useState();
+  const [second, setSecond] = useState('00');
+  const [minute, setMinute] = useState('00');
+  const [counter, setCounter] = useState(0);
 
   const setLimitTime = e => {
     setLimit(e.target.value);
   };
 
   const startRec = () => {
+    setIsRecording(true);
+
     const audioCtx = new AudioContext();
-    console.log('-----오디오컨텍스트-----', audioCtx);
 
     const analyser = audioCtx.createAnalyser();
     setAnalyser(analyser);
@@ -54,18 +47,16 @@ export const Record = () => {
           stream.getAudioTracks().forEach(function (track) {
             track.stop();
           });
+
           mediaRecorder.stop();
 
           analyser.disconnect();
           audioCtx.createMediaStreamSource(stream).disconnect();
 
+          setLimit(0);
+          setIsRecording(false);
+
           mediaRecorder.ondataavailable = function (e) {
-            // setAudioData(e.data);
-            setAudioData(() => {
-              const prevAudioData = [...audioData];
-              prevAudioData.push(e.data);
-              setAudioData(prevAudioData);
-            });
             setAudioDataList(() => {
               const prevAudioDataList = [...audioDataList];
               prevAudioDataList.push({
@@ -74,50 +65,30 @@ export const Record = () => {
                   .toISOString()
                   .replace('T', ' ')
                   .substring(0, 19),
-                time: '00:02',
+                time: `${minute}:${second}`,
               });
               setAudioDataList(prevAudioDataList);
             });
           };
         }, Number(limit) * 1000);
 
-        // const blob = new Blob(audioData, { type: 'audio/ogg codecs=opus' });
-        // audioData.splice(0);
-
-        // const blobURL = URL.createObjectURL(blob);
-        // setBlobUrl(blobURL);
-
-        setIsRecording(false);
+        stopTimer();
       }
     });
-
-    setIsRecording(true);
   };
 
   const stopRec = () => {
     media.ondataavailable = function (e) {
-      // setAudioData(e.data);
-      setAudioData(() => {
-        const prevAudioData = [...audioData];
-        prevAudioData.push(e.data);
-        setAudioData(prevAudioData);
-      });
       setAudioDataList(() => {
         const prevAudioDataList = [...audioDataList];
         prevAudioDataList.push({
           data: e.data,
           date: new Date().toISOString().replace('T', ' ').substring(0, 19),
-          time: '00:04',
+          time: `${minute}:${second}`,
         });
         setAudioDataList(prevAudioDataList);
       });
     };
-
-    // const blob = new Blob(audioData, { type: 'audio/ogg codecs=opus' });
-    // audioData.splice(0);
-
-    // const blobURL = URL.createObjectURL(blob);
-    // setBlobUrl(blobURL);
 
     stream.getAudioTracks().forEach(function (track) {
       track.stop();
@@ -129,6 +100,7 @@ export const Record = () => {
     source.disconnect();
 
     setIsRecording(false);
+    stopTimer();
   };
 
   const play = index => {
@@ -138,6 +110,39 @@ export const Record = () => {
       audio.volume = 1;
       audio.play();
     }
+  };
+
+  useEffect(() => {
+    let intervalId;
+
+    if (isRecording) {
+      intervalId = setInterval(() => {
+        const secondCounter = counter % 60;
+        const minuteCounter = Math.floor(counter / 60);
+
+        let computedSecond =
+          String(secondCounter).length === 1
+            ? `0${secondCounter}`
+            : secondCounter;
+        let computedMinute =
+          String(minuteCounter).length === 1
+            ? `0${minuteCounter}`
+            : minuteCounter;
+
+        setSecond(computedSecond);
+        setMinute(computedMinute);
+
+        setCounter(counter => counter + 1);
+      }, 1000);
+    }
+
+    return () => clearInterval(intervalId);
+  }, [isRecording, counter]);
+
+  const stopTimer = () => {
+    setCounter(0);
+    setSecond('00');
+    setMinute('00');
   };
 
   return (
@@ -197,20 +202,21 @@ export const Record = () => {
 
       <div className="flex justify-center items-center flex-col w-full h-screen bg-slate-500">
         {currTrack >= 0 ? (
-          <Fragment>
-            <input className="border" onChange={setLimitTime} />
-            <button
-              className="flex justify-center items-center w-[75px] h-[75px] rounded-full bg-blue-500"
-              onClick={() => play(currTrack)}
-            >
-              <BsPlayFill className="text-3xl" />
-            </button>
-            {/* <audio controls src={blobUrl}>
-              Play
-            </audio> */}
-          </Fragment>
+          <button
+            className="flex justify-center items-center w-[75px] h-[75px] rounded-full bg-blue-500"
+            onClick={() => play(currTrack)}
+          >
+            <BsPlayFill className="text-3xl" />
+          </button>
+        ) : isRecording ? (
+          <div>
+            <span className="minute">{minute}</span>
+            <span>:</span>
+            <span className="second">{second}</span>
+          </div>
         ) : (
           <div className="text-base">
+            <input className="border" onChange={setLimitTime} />
             녹음을 시작하려면 녹음 버튼을 클릭하십시오.
           </div>
         )}
